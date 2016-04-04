@@ -1,0 +1,7 @@
+################### Wikipediabeat Configuration Example #########################
+
+############################# Wikipediabeat ######################################
+
+wikipediabeat:
+  # Define wikipedia-pages-articles.xml.bz2
+  name: /Users/johtani/tmp/jawiki-latest-pages-articles.xml.bz2

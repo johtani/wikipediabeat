@@ -1,0 +1,9 @@
+/wikipediabeat.iml
+/.idea
+/vendor
+/build
+
+.DS_Store
+/wikipediabeat
+/wikipediabeat.test
+*.pyc

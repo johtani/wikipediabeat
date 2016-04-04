@@ -1,0 +1,4 @@
+beat_name: wikipediabeat
+beat_url: 'https://github.com/johtani'
+beat_repo: 'github.com/johtani'
+beat_description: Sends wikipediabeat metrics to Logstash or directly to Elasticsearch.
