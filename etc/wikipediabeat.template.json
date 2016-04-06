@@ -23,12 +23,19 @@
       "properties": {
         "@timestamp": {
           "type": "date"
+        },
+        "text": {
+          "index": "analyzed",
+          "norms": {
+            "enabled": false
+          },
+          "type": "string"
         }
       }
     }
   },
   "settings": {
-    "index.refresh_interval": "5s"
+    "index.refresh_interval": "60s"
   },
   "template": "wikipediabeat-*"
 }

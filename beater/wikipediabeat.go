@@ -10,11 +10,12 @@ import (
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
 
-	"github.com/johtani/wikipediabeat/config"
-	"github.com/dustin/go-wikiparse"
 	"errors"
-	"os"
+	"github.com/dustin/go-wikiparse"
+	"github.com/johtani/wikipediabeat/config"
 	"log"
+	"net/url"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -26,7 +27,7 @@ type Wikipediabeat struct {
 	name       string
 }
 
-var specialTitleRE, redirectCheckRE, categoryRE, nowikiRE, commentRE *regexp.Regexp
+var specialTitleRE, redirectCheckRE, categoryRE, nowikiRE, commentRE, fileRE *regexp.Regexp
 var plainText1RE, plainText2RE, plainText3RE, plainText4RE, plainText5RE, plainText6RE *regexp.Regexp
 
 func init() {
@@ -35,12 +36,37 @@ func init() {
 	categoryRE = regexp.MustCompile(`\[\[[Cc]ategory:([^\|\]]+)`)
 	nowikiRE = regexp.MustCompile(`(?ms)<nowiki>.*</nowiki>`)
 	commentRE = regexp.MustCompile(`(?ms)<!--.*-->`)
+	fileRE = regexp.MustCompile(`\[ファイル:([^\|\]]+)`)
 	plainText1RE = regexp.MustCompile(`<ref>(.*?)</ref>`)
 	plainText2RE = regexp.MustCompile(`\{\{(.*?)\}\}`)
 	plainText3RE = regexp.MustCompile(`\[\[(.*?):(.*?)\]\]`)
 	plainText4RE = regexp.MustCompile(`\[\[(.*?)\]\]`)
 	plainText5RE = regexp.MustCompile(`\s(.*?)\|(\w+\s)`)
 	plainText6RE = regexp.MustCompile(`\[(.*?)\]`)
+}
+
+func findFiles(text string) []string {
+	cleaned := nowikiRE.ReplaceAllString(commentRE.ReplaceAllString(text, ""), "")
+	matches := fileRE.FindAllStringSubmatch(cleaned, 20)
+	returnValue := []string{}
+	for _, x := range matches {
+		returnValue = append(returnValue, x[1])
+	}
+	return returnValue
+}
+
+func imageURL(text string) string {
+	//TODO implemantation
+	files := findFiles(text)
+	image := ""
+	if len(files) > 0 {
+
+	}
+	return image
+}
+
+func baseURL(text string) string {
+	return text[0 : strings.LastIndex(text, "/")+1]
 }
 
 func findCategories(text string) []string {
@@ -78,7 +104,6 @@ func plainText(text string) string {
 	plainText = strings.Replace(plainText, "'", "", -1)
 	return plainText
 }
-
 
 // Creates beater
 func New() *Wikipediabeat {
@@ -133,25 +158,30 @@ func (bt *Wikipediabeat) Run(b *beat.Beat) error {
 
 	//parse each pages
 	counter := 1
+	baseURL := baseURL(p.SiteInfo().Base)
 
-	for err == nil && counter < 5 {
+	for err == nil {
 		var page *wikiparse.Page
 		page, err = p.Next()
 		//if needed, filtering to index or not
-		if !specialTitleRE.MatchString(page.Title) {
-			if err == nil {
+		if !specialTitleRE.MatchString(page.Title) && len(page.Revisions) > 0 {
+			pageTime, err2 := time.Parse("2006-01-02T15:04:05Z", page.Revisions[0].Timestamp)
+			if err == nil && err2 == nil {
 				event := common.MapStr{
-					"@timestamp": page.Revisions[0].Timestamp,
-					"type": b.Name,
-					"title": page.Title,
-					"text": plainText(page.Revisions[0].Text),
-					"category": findCategories(page.Revisions[0].Text),
-					"link": filteringLinks(page.Revisions[0].Text),
-					"": nil,
+					"@timestamp": common.Time(time.Now()),
+					"updated":    common.Time(pageTime),
+					"type":       b.Name,
+					"title":      page.Title,
+					"text":       plainText(page.Revisions[0].Text),
+					"category":   findCategories(page.Revisions[0].Text),
+					"link":       filteringLinks(page.Revisions[0].Text),
+					"url":        baseURL + url.QueryEscape(strings.Replace(page.Title, " ", "_", -1)),
+					"image":      imageURL(page.Revisions[0].Text),
 				}
-
 				b.Events.PublishEvent(event)
 				logp.Info("Event sent")
+			} else if err2 != nil {
+				err = err2
 			}
 		}
 		counter++

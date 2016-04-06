@@ -47,12 +47,24 @@ env:
         running.
 
 wikipediabeat:
+  type: group
   fields:
-    - name: counter
-      type: integer
+    - name: title
+      type: string
       required: true
       description: >
-        PLEASE UPDATE DOCUMENTATION
+        Page title
+    - name: text
+      type: string
+      required: true
+      index: analyzed
+      descriptioin: >
+        Page
+    - name: updated
+      type: date
+      required: true
+      format: YYYY-MM-DDTHH:MM:SS.milliZ
+      example: 2015-01-24T14:06:05.071Z
 
 sections:
   - ["env", "Common"]

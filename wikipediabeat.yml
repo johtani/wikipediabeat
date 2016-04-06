@@ -4,7 +4,7 @@
 
 wikipediabeat:
   # Define wikipedia-pages-articles.xml.bz2
-  name: jawiki-latest-pages-articles.xml.bz2
+  name: /Users/johtani/tmp/jawiki-latest-pages-articles.xml.bz2
 ###############################################################################
 ############################# Libbeat Config ##################################
 # Base config file used by all other beats for using libbeat features
@@ -38,7 +38,7 @@ output:
 
     # Optional index name. The default is "wikipediabeat" and generates
     # [wikipediabeat-]YYYY.MM.DD keys.
-    #index: "wikipediabeat"
+    index: "wikipediabeat"
 
     # A template is used to set the mapping in Elasticsearch
     # By default template loading is disabled and no template is loaded.

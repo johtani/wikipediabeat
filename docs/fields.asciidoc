@@ -58,3 +58,22 @@ Name of the Beat sending the events. If the shipper name is set in the configura
 The hostname as returned by the operating system on which the Beat is running.
 
 
+[[exported-fields-wikipediabeat]]
+=== Wikipediabeat Fields
+
+
+==== title
+
+type: string
+
+required: True
+
+Page title
+
+
+==== text
+
+type: string
+
+required: True
+
